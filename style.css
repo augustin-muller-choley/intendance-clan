@@ -196,3 +196,19 @@ summary {
 #info-intendant {
   margin-top: 4px;
 }
+
+/* Sous le nom d'une affaire : chez qui elle est depuis le dernier week-end. */
+.detail {
+  display: block;
+  color: #777;
+  font-size: 0.8rem;
+}
+
+.detail.attention {
+  color: #b35c00;
+}
+
+/* Le message de fin, juste sous la liste. */
+#message-fin {
+  margin-top: 12px;
+}

@@ -34,7 +34,7 @@
       <ul class="liste" id="liste-clan"></ul>
       <p class="total" id="total"></p>
       <form id="ajout-routier" class="ajout">
-        <input id="nouveau-prenom" type="text" placeholder="Prénom d'un routier" autocomplete="off">
+        <input id="nouveau-prenom" type="text" placeholder="Prénoms : Paul, Louis, Jean…" autocomplete="off">
         <button type="submit" class="petit">Ajouter</button>
       </form>
     </section>
@@ -49,7 +49,7 @@
     <section>
       <h2>Message pour le groupe</h2>
       <p class="aide">Tu peux retoucher le texte avant de le copier.</p>
-      <textarea id="message" rows="20"></textarea>
+      <textarea id="message" rows="24"></textarea>
       <!-- N'apparaît que si le message a été retouché à la main. -->
       <div id="retouche" class="retouche" hidden>
         <span id="retouche-texte"></span>
@@ -58,7 +58,16 @@
       <button type="button" id="copier">Copier le message</button>
     </section>
 
-    <!-- 5. La sauvegarde : les données ne sont que sur ce téléphone -->
+    <!-- 5. Fin du week-end : qui repart avec quoi (pour savoir qui l'a au prochain) -->
+    <section>
+      <h2>Fin du week-end : qui repart avec quoi</h2>
+      <p class="aide">Par défaut, chacun remporte ce qu'il a apporté. Change seulement ce qui part chez quelqu'un d'autre. Au prochain week-end, l'outil saura qui a quoi.</p>
+      <ul class="liste" id="liste-repart"></ul>
+      <textarea id="message-fin" rows="15"></textarea>
+      <button type="button" id="copier-fin">Copier le message de fin</button>
+    </section>
+
+    <!-- 6. La sauvegarde : les données ne sont que sur ce téléphone -->
     <section>
       <h2>Sauvegarde</h2>
       <p class="aide">Tout est enregistré sur ce téléphone seulement. Après chaque modification importante, copie la sauvegarde et envoie-la-toi (WhatsApp, Notes). Nouveau téléphone ou Safari vidé : recolle-la ici.</p>
