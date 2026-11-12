@@ -65,6 +65,29 @@ select {
   margin: 0;
 }
 
+/* Liste du clan : 3 colonnes (prénom, vient, a payé). */
+.liste li:has(> input) ,
+.liste li.entete {
+  display: grid;
+  grid-template-columns: 1fr 64px 64px;
+  justify-items: center;
+}
+
+.liste li:has(> input) > span:first-child,
+.liste li.entete > span:first-child {
+  justify-self: start;
+}
+
+.entete {
+  font-size: 0.85rem;
+  color: #777;
+}
+
+/* Ceux qui ne viennent pas ce week-end sont grisés. */
+.absent {
+  color: #aaa;
+}
+
 .total {
   font-weight: bold;
 }

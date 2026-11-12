@@ -17,8 +17,17 @@
     <!-- 1. Le week-end -->
     <section>
       <h2>Week-end</h2>
-      <label>Nom <input type="text" value="Service de la Saint-Nicolas"></label>
-      <label>Date <input type="date" value="2026-12-05"></label>
+      <!-- Les week-ends du calendrier du clan : plus besoin de taper la date. -->
+      <label>Lequel ?
+        <select>
+          <option>Sam. 5 déc. : Saint-Nicolas</option>
+          <option>23-24 janv. : week-end clan</option>
+          <option>20-23 fév. : route d'hiver</option>
+          <option>20-21 mars : week-end clan</option>
+          <option>22-23 mai : fête de la route</option>
+        </select>
+      </label>
+      <!-- 7 € par défaut, mais modifiable : le prix a déjà changé (6 €, 10 €). -->
       <label>Prix de l'intendance (€) <input type="number" value="7"></label>
       <label>Intendant
         <select>
@@ -29,17 +38,20 @@
       </label>
     </section>
 
-    <!-- 2. Qui vient, et qui a remboursé -->
+    <!-- 2. Tout le clan : qui vient ce week-end, et qui a remboursé -->
     <section>
-      <h2>Présents et remboursements</h2>
+      <h2>Qui vient, qui a remboursé</h2>
       <ul class="liste">
-        <li><span>Paul (intendant)</span> <span class="etat">—</span></li>
-        <li><span>Louis</span> <label><input type="checkbox" checked> a remboursé</label></li>
-        <li><span>Jean</span> <label><input type="checkbox"> a remboursé</label></li>
-        <li><span>Pierre</span> <label><input type="checkbox"> a remboursé</label></li>
-        <li><span>Hugo</span> <label><input type="checkbox" checked> a remboursé</label></li>
+        <li class="entete"><span></span> <span>Vient</span> <span>A payé</span></li>
+        <li><span>Paul (intendant)</span> <input type="checkbox" checked> <span>—</span></li>
+        <li><span>Louis</span> <input type="checkbox" checked> <input type="checkbox" checked></li>
+        <li><span>Jean</span> <input type="checkbox" checked> <input type="checkbox"></li>
+        <li class="absent"><span>Marc</span> <input type="checkbox"> <span></span></li>
+        <li><span>Pierre</span> <input type="checkbox" checked> <input type="checkbox"></li>
+        <li class="absent"><span>Thomas</span> <input type="checkbox"> <span></span></li>
+        <li><span>Hugo</span> <input type="checkbox" checked> <input type="checkbox" checked></li>
       </ul>
-      <p class="total">Reste à rembourser : 2 personnes, soit 14&nbsp;€.</p>
+      <p class="total">5 présents. Reste à rembourser : 2 personnes, soit 14&nbsp;€.</p>
     </section>
 
     <!-- 3. Qui apporte quoi -->
