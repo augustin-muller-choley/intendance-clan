@@ -4,9 +4,75 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Intendance du clan</title>
+    <link rel="stylesheet" href="style.css">
   </head>
   <body>
-    <h1>Bonjour le clan !</h1>
-    <p>Bientôt ici : qui apporte quoi, qui a payé l'intendance, et qui a le matériel.</p>
+    <!-- MAQUETTE : les prénoms et les chiffres sont inventés, rien n'est encore enregistré. -->
+
+    <header>
+      <h1>Intendance du clan</h1>
+      <p class="maquette">Maquette : rien n'est encore enregistré.</p>
+    </header>
+
+    <!-- 1. Le week-end -->
+    <section>
+      <h2>Week-end</h2>
+      <label>Nom <input type="text" value="Service de la Saint-Nicolas"></label>
+      <label>Date <input type="date" value="2026-12-05"></label>
+      <label>Prix de l'intendance (€) <input type="number" value="7"></label>
+      <label>Intendant
+        <select>
+          <option>Paul</option>
+          <option>Louis</option>
+          <option>Jean</option>
+        </select>
+      </label>
+    </section>
+
+    <!-- 2. Qui vient, et qui a remboursé -->
+    <section>
+      <h2>Présents et remboursements</h2>
+      <ul class="liste">
+        <li><span>Paul (intendant)</span> <span class="etat">—</span></li>
+        <li><span>Louis</span> <label><input type="checkbox" checked> a remboursé</label></li>
+        <li><span>Jean</span> <label><input type="checkbox"> a remboursé</label></li>
+        <li><span>Pierre</span> <label><input type="checkbox"> a remboursé</label></li>
+        <li><span>Hugo</span> <label><input type="checkbox" checked> a remboursé</label></li>
+      </ul>
+      <p class="total">Reste à rembourser : 2 personnes, soit 14&nbsp;€.</p>
+    </section>
+
+    <!-- 3. Qui apporte quoi -->
+    <section>
+      <h2>Affaires à apporter</h2>
+      <ul class="liste">
+        <li><span>Kit feu</span> <select><option>Louis</option><option>Jean</option></select></li>
+        <li><span>Kit vaisselle</span> <select><option>Jean</option><option>Louis</option></select></li>
+        <li><span>Pelle-bêche</span> <select><option>Pierre</option><option>Hugo</option></select></li>
+        <li><span>Grosses gamelles</span> <select><option>Hugo</option><option>Pierre</option></select></li>
+        <li><span>Louche et spatule</span> <select><option>Hugo</option><option>Jean</option></select></li>
+        <li><span>Sel et poivre</span> <select><option>Paul</option><option>Louis</option></select></li>
+        <li><span>Bidon d'eau</span> <select><option>Pierre</option><option>Paul</option></select></li>
+      </ul>
+    </section>
+
+    <!-- 4. Le message à coller dans le groupe WhatsApp -->
+    <section>
+      <h2>Message pour le groupe</h2>
+      <pre class="message">Salut les gars ! Pour le Service de la Saint-Nicolas (sam. 5 déc.) :
+
+Qui apporte quoi :
+- Kit feu : Louis
+- Kit vaisselle : Jean
+- Pelle-bêche : Pierre
+- Grosses gamelles : Hugo
+- Louche et spatule : Hugo
+- Sel et poivre : Paul
+- Bidon d'eau : Pierre
+
+Intendance : 7 € à rembourser à Paul.
+Pas encore remboursé : Jean, Pierre.</pre>
+      <button type="button">Copier le message</button>
+    </section>
   </body>
 </html>
