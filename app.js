@@ -182,7 +182,15 @@ function afficher() {
   }
 
   // 4. Le message
-  el("message").value = fabriquerMessage(we, pasPaye);
+  // S'il a été retouché à la main, on garde la retouche au lieu de le refabriquer.
+  const automatique = fabriquerMessage(we, pasPaye);
+  const retouche = typeof we.messagePerso === "string";
+  el("message").value = retouche ? we.messagePerso : automatique;
+  el("retouche").hidden = !retouche;
+  // Si les cases ont changé depuis la retouche, le texte retouché n'est plus à jour : on prévient.
+  el("retouche-texte").textContent = retouche && we.messageBase !== automatique
+    ? "Attention : les cases ont changé depuis ta retouche, ton texte n'est plus à jour."
+    : "Tu as retouché le message : il ne change plus tout seul.";
 }
 
 function fabriquerMessage(we, pasPaye) {
@@ -220,17 +228,68 @@ el("ajout-routier").onsubmit = (e) => {
   el("nouveau-prenom").value = "";
 };
 
-el("copier").onclick = async () => {
-  const bouton = el("copier");
+// Quand on tape dans le message, on enregistre la retouche, sans tout réafficher
+// (sinon le curseur sauterait à chaque lettre).
+el("message").oninput = () => {
+  const we = weekendActuel();
+  if (typeof we.messagePerso !== "string") {
+    // Première retouche : on retient le message automatique de départ, pour savoir plus tard s'il a changé.
+    we.messageBase = fabriquerMessage(we, quiDoitPayer(we).filter((p) => !we.payes[p]));
+  }
+  we.messagePerso = el("message").value;
+  enregistrer();
+  el("retouche").hidden = false;
+};
+
+el("revenir-auto").onclick = () => modifier(() => {
+  const we = weekendActuel();
+  delete we.messagePerso;
+  delete we.messageBase;
+});
+
+// Copie un texte dans le presse-papiers ; si le navigateur refuse, on le sélectionne pour une copie à la main.
+async function copier(bouton, zone, texteNormal, texteOk) {
   try {
-    await navigator.clipboard.writeText(el("message").value);
-    bouton.textContent = "Copié ! Colle-le dans WhatsApp";
+    await navigator.clipboard.writeText(zone.value);
+    bouton.textContent = texteOk;
   } catch (e) {
-    // Si le navigateur refuse, on sélectionne le texte pour le copier à la main.
-    el("message").select();
+    zone.hidden = false;
+    zone.select();
     bouton.textContent = "Sélectionné : fais « Copier »";
   }
-  setTimeout(() => (bouton.textContent = "Copier le message"), 2500);
+  setTimeout(() => (bouton.textContent = texteNormal), 2500);
+}
+
+el("copier").onclick = () =>
+  copier(el("copier"), el("message"), "Copier le message", "Copié ! Colle-le dans WhatsApp");
+
+// ---------- La sauvegarde ----------
+// Les données ne sont que sur ce téléphone. Une sauvegarde, c'est tout le contenu
+// écrit en texte : on peut l'envoyer à soi-même (WhatsApp, Notes) et le recoller plus tard.
+
+el("copier-sauvegarde").onclick = () => {
+  el("texte-sauvegarde").value = JSON.stringify(donnees);
+  copier(el("copier-sauvegarde"), el("texte-sauvegarde"), "Copier la sauvegarde",
+    "Copiée ! Envoie-la-toi sur WhatsApp ou dans Notes");
+};
+
+el("restaurer").onclick = () => {
+  let lue;
+  try {
+    lue = JSON.parse(el("texte-restauration").value);
+  } catch (e) {
+    lue = null;
+  }
+  if (!lue || !Array.isArray(lue.clan) || typeof lue.weekends !== "object") {
+    alert("Ce texte n'est pas une sauvegarde de l'outil. Recopie-la en entier.");
+    return;
+  }
+  if (confirm(`Remplacer tout ce qu'il y a sur ce téléphone par la sauvegarde (${lue.clan.length} routiers) ?`)) {
+    donnees = lue;
+    if (!WEEKENDS.some((w) => w.id === donnees.weekendChoisi)) donnees.weekendChoisi = WEEKENDS[0].id;
+    el("texte-restauration").value = "";
+    modifier(() => {});
+  }
 };
 
 // Premier affichage au chargement de la page.

@@ -45,7 +45,25 @@
       <h2>Message pour le groupe</h2>
       <p class="aide">Tu peux retoucher le texte avant de le copier.</p>
       <textarea id="message" rows="20"></textarea>
+      <!-- N'apparaît que si le message a été retouché à la main. -->
+      <div id="retouche" class="retouche" hidden>
+        <span id="retouche-texte"></span>
+        <button type="button" id="revenir-auto" class="secondaire">Revenir au message automatique</button>
+      </div>
       <button type="button" id="copier">Copier le message</button>
+    </section>
+
+    <!-- 5. La sauvegarde : les données ne sont que sur ce téléphone -->
+    <section>
+      <h2>Sauvegarde</h2>
+      <p class="aide">Tout est enregistré sur ce téléphone seulement. Après chaque modification importante, copie la sauvegarde et envoie-la-toi (WhatsApp, Notes). Nouveau téléphone ou Safari vidé : recolle-la ici.</p>
+      <textarea id="texte-sauvegarde" rows="3" readonly hidden></textarea>
+      <button type="button" id="copier-sauvegarde">Copier la sauvegarde</button>
+      <details>
+        <summary>Restaurer une sauvegarde</summary>
+        <textarea id="texte-restauration" rows="3" placeholder="Colle ici le texte de la sauvegarde"></textarea>
+        <button type="button" id="restaurer" class="secondaire">Restaurer</button>
+      </details>
     </section>
 
     <script src="app.js"></script>
