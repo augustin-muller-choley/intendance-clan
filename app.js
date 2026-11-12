@@ -11,7 +11,15 @@ const WEEKENDS = [
   { id: "2027-02-20", nom: "route d'hiver", dates: "20-23 fév." },
   { id: "2027-03-20", nom: "week-end clan", dates: "20-21 mars" },
   { id: "2027-05-22", nom: "fête de la route", dates: "22-23 mai" },
+  { id: "2027-07-18", nom: "route d'été", dates: "18-29 juil." },
 ];
+
+// Le calendrier complet : les week-ends ci-dessus, plus ceux que l'intendant a ajoutés
+// lui-même (enregistrés sur son téléphone), triés par date.
+// L'id d'un week-end est sa date (2027-07-18) : trier les id, c'est trier les dates.
+function calendrier() {
+  return [...WEEKENDS, ...(donnees.ajoutes || [])].sort((a, b) => a.id.localeCompare(b.id));
+}
 
 const AFFAIRES = [
   "Kit feu",
@@ -108,12 +116,12 @@ function nettoyer(we) {
 // Idée : à la fin d'un week-end, on note qui repart avec chaque affaire.
 // Au week-end suivant, l'outil sait donc qui l'a chez lui, et le met d'office.
 
-const ORDRE = WEEKENDS.map((w) => w.id);
 
 // Qui a l'affaire chez lui AVANT ce week-end : celui qui est reparti avec au week-end précédent.
 function gardien(id, objet) {
-  const i = ORDRE.indexOf(id);
-  return i > 0 ? repartAvec(ORDRE[i - 1], objet) : "";
+  const ordre = calendrier().map((w) => w.id);
+  const i = ordre.indexOf(id);
+  return i > 0 ? repartAvec(ordre[i - 1], objet) : "";
 }
 
 // Qui APPORTE l'affaire à ce week-end : celui choisi à la main,
@@ -160,7 +168,7 @@ function afficher() {
   // 1. Le week-end
   const choixWe = el("choix-weekend");
   choixWe.innerHTML = "";
-  for (const w of WEEKENDS) {
+  for (const w of calendrier()) {
     const option = document.createElement("option");
     option.value = w.id;
     option.textContent = `${w.dates} : ${w.nom}`;
@@ -168,6 +176,8 @@ function afficher() {
     choixWe.appendChild(option);
   }
   el("prix").value = we.prix;
+  // Seuls les week-ends ajoutés à la main peuvent être retirés.
+  el("retirer-weekend").hidden = !(donnees.ajoutes || []).some((w) => w.id === donnees.weekendChoisi);
 
   const ancienIntendant = el("intendant");
   const nouvelIntendant = menu(presents, we.intendant, "— personne —");
@@ -291,7 +301,7 @@ function afficher() {
 }
 
 function fabriquerMessage(we, pasPaye) {
-  const w = WEEKENDS.find((x) => x.id === donnees.weekendChoisi);
+  const w = calendrier().find((x) => x.id === donnees.weekendChoisi);
   const lignes = [`Salut les gars ! Pour le ${w.nom} (${w.dates}) :`, "", "Qui apporte quoi :"];
   const id = donnees.weekendChoisi;
   for (const objet of AFFAIRES) {
@@ -310,7 +320,7 @@ function fabriquerMessage(we, pasPaye) {
 
 // Le message de fin de week-end : qui garde quoi jusqu'au prochain.
 function fabriquerMessageFin() {
-  const w = WEEKENDS.find((x) => x.id === donnees.weekendChoisi);
+  const w = calendrier().find((x) => x.id === donnees.weekendChoisi);
   const lignes = [`Merci pour le ${w.nom} ! Qui garde quoi jusqu'au prochain week-end :`, ""];
   for (const objet of AFFAIRES) {
     lignes.push(`- ${objet} : ${repartAvec(w.id, objet) || "personne ?!"}`);
@@ -346,6 +356,39 @@ el("ajout-routier").onsubmit = (e) => {
   });
   if (doublons.length > 0) alert(`Déjà dans le clan : ${doublons.join(", ")}.`);
   el("nouveau-prenom").value = "";
+};
+
+// Ajouter un week-end qui n'est pas dans le calendrier (week-end d'équipe, sortie...).
+el("ajout-weekend").onsubmit = (e) => {
+  e.preventDefault();
+  const date = el("date-weekend").value; // ex. « 2027-04-10 »
+  const nom = el("nom-weekend").value.trim() || "week-end";
+  if (!date) {
+    alert("Choisis d'abord la date du premier jour.");
+    return;
+  }
+  if (calendrier().some((w) => w.id === date)) {
+    alert("Il y a déjà un week-end qui commence ce jour-là.");
+    return;
+  }
+  // « 2027-04-10 » devient « sam. 10 avr. »
+  const dates = new Date(`${date}T12:00:00`).toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" });
+  modifier(() => {
+    donnees.ajoutes = [...(donnees.ajoutes || []), { id: date, nom, dates }];
+    donnees.weekendChoisi = date;
+  });
+  el("date-weekend").value = "";
+  el("nom-weekend").value = "";
+};
+
+el("retirer-weekend").onclick = () => {
+  const id = donnees.weekendChoisi;
+  if (!confirm("Retirer ce week-end et tout ce qui a été noté dedans ?")) return;
+  modifier(() => {
+    donnees.ajoutes = donnees.ajoutes.filter((w) => w.id !== id);
+    delete donnees.weekends[id];
+    donnees.weekendChoisi = WEEKENDS[0].id;
+  });
 };
 
 el("proposer-intendant").onclick = () => {
@@ -419,7 +462,7 @@ el("restaurer").onclick = () => {
   }
   if (confirm(`Remplacer tout ce qu'il y a sur ce téléphone par la sauvegarde (${lue.clan.length} routiers) ?`)) {
     donnees = lue;
-    if (!WEEKENDS.some((w) => w.id === donnees.weekendChoisi)) donnees.weekendChoisi = WEEKENDS[0].id;
+    if (!calendrier().some((w) => w.id === donnees.weekendChoisi)) donnees.weekendChoisi = WEEKENDS[0].id;
     el("texte-restauration").value = "";
     modifier(() => {});
   }

@@ -19,6 +19,16 @@
     <section>
       <h2>Week-end</h2>
       <label>Lequel ? <select id="choix-weekend"></select></label>
+      <button type="button" id="retirer-weekend" class="petit secondaire" hidden>Retirer ce week-end</button>
+      <!-- Pour un week-end qui n'est pas dans le calendrier (équipes, sortie...). -->
+      <details>
+        <summary>Ajouter un week-end</summary>
+        <form id="ajout-weekend" class="ajout-weekend">
+          <label>Premier jour <input id="date-weekend" type="date"></label>
+          <label>Nom <input id="nom-weekend" type="text" placeholder="ex. week-end équipes" autocomplete="off"></label>
+          <button type="submit" class="petit">Ajouter ce week-end</button>
+        </form>
+      </details>
       <label>Prix de l'intendance (€) <input id="prix" type="number" min="0" step="0.5"></label>
       <div class="ligne-intendant">
         <label>Intendant <select id="intendant"></select></label>
