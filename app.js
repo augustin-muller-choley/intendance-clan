@@ -255,14 +255,18 @@ el("prix").onchange = (e) => modifier(() => (weekendActuel().prix = Number(e.tar
 
 el("ajout-routier").onsubmit = (e) => {
   e.preventDefault(); // sinon le formulaire recharge la page
-  const prenom = el("nouveau-prenom").value.trim();
+  // On peut taper plusieurs prénoms d'un coup, séparés par des virgules
+  // ou des retours à la ligne : « Paul, Louis, Jean ».
+  const prenoms = el("nouveau-prenom").value.split(/[,;\n]/).map((p) => p.trim()).filter((p) => p);
   // « jean » et « Jean », c'est la même personne : on compare en minuscules.
-  const dejaLa = donnees.clan.some((p) => p.toLowerCase() === prenom.toLowerCase());
-  if (prenom && !dejaLa) {
-    modifier(() => donnees.clan.push(prenom));
-  } else if (dejaLa) {
-    alert(`${prenom} est déjà dans le clan.`);
-  }
+  const dejaLa = (prenom) => donnees.clan.some((p) => p.toLowerCase() === prenom.toLowerCase());
+  const doublons = prenoms.filter(dejaLa);
+  modifier(() => {
+    for (const prenom of prenoms) {
+      if (!dejaLa(prenom)) donnees.clan.push(prenom);
+    }
+  });
+  if (doublons.length > 0) alert(`Déjà dans le clan : ${doublons.join(", ")}.`);
   el("nouveau-prenom").value = "";
 };
 
