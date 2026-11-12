@@ -177,3 +177,22 @@ summary {
   color: #555;
   margin-bottom: 8px;
 }
+
+/* L'intendant : le menu, et à côté le bouton « Proposer ». */
+.ligne-intendant {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ligne-intendant label {
+  margin: 0;
+}
+
+.ligne-intendant button {
+  margin-top: 0;
+}
+
+#info-intendant {
+  margin-top: 4px;
+}

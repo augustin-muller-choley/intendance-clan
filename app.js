@@ -87,10 +87,40 @@ function quiDoitPayer(we) {
   return donnees.clan.filter((p) => we.presents[p] && p !== we.intendant);
 }
 
+// Écrit un prix à la française : 7.5 devient « 7,5 € ».
+const euros = (n) => `${n.toLocaleString("fr-FR")} €`;
+
+// Ménage : l'intendant et ceux qui apportent une affaire doivent être présents
+// (et toujours dans le clan). Sinon on les enlève, pour que le message ne mente pas.
+function nettoyer(we) {
+  const estPresent = (p) => donnees.clan.includes(p) && we.presents[p];
+  if (we.intendant && !estPresent(we.intendant)) we.intendant = "";
+  for (const objet of AFFAIRES) {
+    if (we.affaires[objet] && !estPresent(we.affaires[objet])) delete we.affaires[objet];
+  }
+}
+
+// Combien de fois chacun a été intendant, sur les autres week-ends de l'année.
+function foisIntendant(p) {
+  return Object.entries(donnees.weekends)
+    .filter(([id, w]) => id !== donnees.weekendChoisi && w.intendant === p).length;
+}
+
+// Propose l'intendant : parmi les présents, celui qui l'a été le moins souvent.
+// En cas d'égalité, on tire au sort parmi les ex aequo.
+function proposerIntendant(we) {
+  const presents = donnees.clan.filter((p) => we.presents[p]);
+  if (presents.length === 0) return null;
+  const minimum = Math.min(...presents.map(foisIntendant));
+  const candidats = presents.filter((p) => foisIntendant(p) === minimum);
+  return candidats[Math.floor(Math.random() * candidats.length)];
+}
+
 // ---------- Affichage ----------
 
 function afficher() {
   const we = weekendActuel();
+  nettoyer(we);
   const presents = donnees.clan.filter((p) => we.presents[p]);
 
   // 1. Le week-end
@@ -110,6 +140,9 @@ function afficher() {
   nouvelIntendant.id = "intendant";
   nouvelIntendant.onchange = () => modifier(() => (we.intendant = nouvelIntendant.value));
   ancienIntendant.replaceWith(nouvelIntendant);
+  el("info-intendant").textContent = we.intendant
+    ? `${we.intendant} a été intendant ${foisIntendant(we.intendant)} fois sur les autres week-ends.`
+    : "";
 
   // 2. Le clan
   const liste = el("liste-clan");
@@ -166,7 +199,7 @@ function afficher() {
   const doivent = quiDoitPayer(we);
   const pasPaye = doivent.filter((p) => !we.payes[p]);
   el("total").textContent = donnees.clan.length === 0 ? "" :
-    `${presents.length} présent(s). Reste à rembourser : ${pasPaye.length} personne(s), soit ${pasPaye.length * we.prix} €.`;
+    `${presents.length} présent(s). Reste à rembourser : ${pasPaye.length} personne(s), soit ${euros(pasPaye.length * we.prix)}.`;
 
   // 3. Les affaires
   const listeAffaires = el("liste-affaires");
@@ -201,7 +234,7 @@ function fabriquerMessage(we, pasPaye) {
   }
   lignes.push("");
   const aQui = we.intendant ? ` à rembourser à ${we.intendant}` : "";
-  lignes.push(`Intendance : ${we.prix} €${aQui}.`);
+  lignes.push(`Intendance : ${euros(we.prix)}${aQui}.`);
   if (pasPaye.length > 0) lignes.push(`Pas encore remboursé : ${pasPaye.join(", ")}.`);
   return lignes.join("\n");
 }
@@ -222,10 +255,24 @@ el("prix").onchange = (e) => modifier(() => (weekendActuel().prix = Number(e.tar
 el("ajout-routier").onsubmit = (e) => {
   e.preventDefault(); // sinon le formulaire recharge la page
   const prenom = el("nouveau-prenom").value.trim();
-  if (prenom && !donnees.clan.includes(prenom)) {
+  // « jean » et « Jean », c'est la même personne : on compare en minuscules.
+  const dejaLa = donnees.clan.some((p) => p.toLowerCase() === prenom.toLowerCase());
+  if (prenom && !dejaLa) {
     modifier(() => donnees.clan.push(prenom));
+  } else if (dejaLa) {
+    alert(`${prenom} est déjà dans le clan.`);
   }
   el("nouveau-prenom").value = "";
+};
+
+el("proposer-intendant").onclick = () => {
+  const we = weekendActuel();
+  const choisi = proposerIntendant(we);
+  if (!choisi) {
+    alert("Coche d'abord qui vient ce week-end.");
+    return;
+  }
+  modifier(() => (we.intendant = choisi));
 };
 
 // Quand on tape dans le message, on enregistre la retouche, sans tout réafficher
