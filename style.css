@@ -212,3 +212,21 @@ summary {
 #message-fin {
   margin-top: 12px;
 }
+
+/* Ajouter un week-end : la date et le nom l'un sous l'autre. */
+.ajout-weekend {
+  margin-bottom: 8px;
+}
+
+input[type="date"] {
+  font-size: 1rem;
+  padding: 6px;
+}
+
+#retirer-weekend {
+  margin: 0 0 8px;
+}
+
+#retirer-weekend[hidden] {
+  display: none;
+}
