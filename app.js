@@ -25,6 +25,7 @@ const AFFAIRES = [
   "Spatule",
   "Sel et poivre",
   "Bidon d'eau",
+  "Sacs-poubelles jaunes et noirs",
 ];
 
 const PRIX_PAR_DEFAUT = 7;
