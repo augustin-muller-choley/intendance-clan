@@ -7,90 +7,47 @@
     <link rel="stylesheet" href="style.css">
   </head>
   <body>
-    <!-- MAQUETTE : les prénoms et les chiffres sont inventés, rien n'est encore enregistré. -->
+    <!-- Ce fichier ne contient que la structure : des cases vides avec un nom (id).
+         app.js les remplit avec les données. Les données restent enregistrées
+         dans le navigateur de ce téléphone : rien n'est envoyé sur internet. -->
 
     <header>
       <h1>Intendance du clan</h1>
-      <p class="maquette">Maquette : rien n'est encore enregistré.</p>
     </header>
 
     <!-- 1. Le week-end -->
     <section>
       <h2>Week-end</h2>
-      <!-- Les week-ends du calendrier du clan : plus besoin de taper la date. -->
-      <label>Lequel ?
-        <select>
-          <option>Sam. 5 déc. : Saint-Nicolas</option>
-          <option>23-24 janv. : week-end clan</option>
-          <option>20-23 fév. : route d'hiver</option>
-          <option>20-21 mars : week-end clan</option>
-          <option>22-23 mai : fête de la route</option>
-        </select>
-      </label>
-      <!-- 7 € par défaut, mais modifiable : le prix a déjà changé (6 €, 10 €). -->
-      <label>Prix de l'intendance (€) <input type="number" value="7"></label>
-      <label>Intendant
-        <select>
-          <option>Paul</option>
-          <option>Louis</option>
-          <option>Jean</option>
-        </select>
-      </label>
+      <label>Lequel ? <select id="choix-weekend"></select></label>
+      <label>Prix de l'intendance (€) <input id="prix" type="number" min="0" step="0.5"></label>
+      <label>Intendant <select id="intendant"></select></label>
     </section>
 
     <!-- 2. Tout le clan : qui vient ce week-end, et qui a remboursé -->
     <section>
       <h2>Qui vient, qui a remboursé</h2>
-      <ul class="liste">
-        <li class="entete"><span></span> <span>Vient</span> <span>A payé</span></li>
-        <li><span>Paul (intendant)</span> <input type="checkbox" checked> <span>—</span></li>
-        <li><span>Louis</span> <input type="checkbox" checked> <input type="checkbox" checked></li>
-        <li><span>Jean</span> <input type="checkbox" checked> <input type="checkbox"></li>
-        <li class="absent"><span>Marc</span> <input type="checkbox"> <span></span></li>
-        <li><span>Pierre</span> <input type="checkbox" checked> <input type="checkbox"></li>
-        <li class="absent"><span>Thomas</span> <input type="checkbox"> <span></span></li>
-        <li><span>Hugo</span> <input type="checkbox" checked> <input type="checkbox" checked></li>
-      </ul>
-      <p class="total">5 présents. Reste à rembourser : 2 personnes, soit 14&nbsp;€.</p>
+      <ul class="liste" id="liste-clan"></ul>
+      <p class="total" id="total"></p>
+      <form id="ajout-routier" class="ajout">
+        <input id="nouveau-prenom" type="text" placeholder="Prénom d'un routier" autocomplete="off">
+        <button type="submit" class="petit">Ajouter</button>
+      </form>
     </section>
 
     <!-- 3. Qui apporte quoi -->
     <section>
       <h2>Affaires à apporter</h2>
-      <ul class="liste">
-        <li><span>Kit feu</span> <select><option>Louis</option><option>Jean</option></select></li>
-        <li><span>Kit vaisselle</span> <select><option>Jean</option><option>Louis</option></select></li>
-        <li><span>Pelle-bêche</span> <select><option>Pierre</option><option>Hugo</option></select></li>
-        <li><span>Grosse gamelle</span> <select><option>Hugo</option><option>Pierre</option></select></li>
-        <li><span>Petite gamelle n°1</span> <select><option>Louis</option><option>Jean</option></select></li>
-        <li><span>Petite gamelle n°2</span> <select><option>Jean</option><option>Hugo</option></select></li>
-        <li><span>Petite gamelle n°3</span> <select><option>Pierre</option><option>Louis</option></select></li>
-        <li><span>Louche</span> <select><option>Hugo</option><option>Jean</option></select></li>
-        <li><span>Spatule</span> <select><option>Paul</option><option>Louis</option></select></li>
-        <li><span>Sel et poivre</span> <select><option>Paul</option><option>Louis</option></select></li>
-        <li><span>Bidon d'eau</span> <select><option>Pierre</option><option>Paul</option></select></li>
-      </ul>
+      <ul class="liste" id="liste-affaires"></ul>
     </section>
 
     <!-- 4. Le message à coller dans le groupe WhatsApp -->
     <section>
       <h2>Message pour le groupe</h2>
-      <pre class="message">Salut les gars ! Pour le Service de la Saint-Nicolas (sam. 5 déc.) :
-
-Qui apporte quoi :
-- Kit feu : Louis
-- Kit vaisselle : Jean
-- Pelle-bêche : Pierre
-- Grosse gamelle : Hugo
-- Petites gamelles : Louis, Jean, Pierre
-- Louche : Hugo
-- Spatule : Paul
-- Sel et poivre : Paul
-- Bidon d'eau : Pierre
-
-Intendance : 7 € à rembourser à Paul.
-Pas encore remboursé : Jean, Pierre.</pre>
-      <button type="button">Copier le message</button>
+      <p class="aide">Tu peux retoucher le texte avant de le copier.</p>
+      <textarea id="message" rows="20"></textarea>
+      <button type="button" id="copier">Copier le message</button>
     </section>
+
+    <script src="app.js"></script>
   </body>
 </html>
