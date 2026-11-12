@@ -230,3 +230,51 @@ input[type="date"] {
 #retirer-weekend[hidden] {
   display: none;
 }
+
+/* Les cartes repliables : le titre ressemble à un titre de carte. */
+summary.titre {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #222;
+  margin: 0;
+}
+
+section > details {
+  margin-top: 0;
+}
+
+/* Carte de première utilisation. */
+.pour-commencer {
+  border: 2px solid #2a7a3b;
+}
+
+.pour-commencer[hidden],
+#appliquer-prix[hidden] {
+  display: none;
+}
+
+.pour-commencer ol {
+  padding-left: 20px;
+  margin: 0;
+}
+
+/* La répartition des tentes garde ses retours à la ligne. */
+.repartition {
+  white-space: pre-wrap;
+}
+
+/* Ajouter un aliment : nom, quantité, unité, bouton sur une ligne. */
+.ajout-course {
+  display: flex;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+.ajout-course #course-nom {
+  flex: 1;
+  min-width: 0;
+}
+
+.ajout-course #course-qte {
+  width: 64px;
+}
