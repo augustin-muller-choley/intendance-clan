@@ -36,6 +36,10 @@ const AFFAIRES = [
   "Sacs-poubelles jaunes et noirs",
 ];
 
+// La liste d'affaires peut être modifiée dans l'outil (brûleur, torches...).
+// Tant qu'on n'y a pas touché, on prend la liste ci-dessus.
+const objets = () => donnees.objets || AFFAIRES;
+
 const PRIX_PAR_DEFAUT = 7;
 
 // ---------- Les données qui changent, enregistrées dans le navigateur ----------
@@ -99,14 +103,14 @@ function quiDoitPayer(we) {
 }
 
 // Écrit un prix à la française : 7.5 devient « 7,5 € ».
-const euros = (n) => `${n.toLocaleString("fr-FR")} €`;
+const euros = (n) => `${n.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} €`;
 
 // Ménage : l'intendant et ceux qui apportent une affaire doivent être présents
 // (et toujours dans le clan). Sinon on les enlève, pour que le message ne mente pas.
 function nettoyer(we) {
   const estPresent = (p) => donnees.clan.includes(p) && we.presents[p];
   if (we.intendant && !estPresent(we.intendant)) we.intendant = "";
-  for (const objet of AFFAIRES) {
+  for (const objet of objets()) {
     if (we.affaires[objet] && !estPresent(we.affaires[objet])) delete we.affaires[objet];
     if (we.repart[objet] && !estPresent(we.repart[objet])) delete we.repart[objet];
   }
@@ -158,6 +162,54 @@ function proposerIntendant(we) {
   return candidats[Math.floor(Math.random() * candidats.length)];
 }
 
+// ---------- Les tentes ----------
+// Chacun indique une fois la taille de sa tente (0 = pas de tente). Pour un week-end,
+// on prend d'abord les plus grandes tentes des présents, juste assez pour tout le monde,
+// puis on répartit les autres dans les tentes les moins remplies.
+function repartirTentes(presents) {
+  const tentes = donnees.tentes || {};
+  const proprios = presents.filter((p) => tentes[p] > 0).sort((a, b) => tentes[b] - tentes[a]);
+  const choisies = [];
+  let places = 0;
+  for (const p of proprios) {
+    if (places >= presents.length) break;
+    choisies.push(p);
+    places += tentes[p];
+  }
+  const occupants = {};
+  for (const p of choisies) occupants[p] = [p]; // chacun dort dans sa tente
+  const sansPlace = [];
+  for (const p of presents.filter((x) => !choisies.includes(x))) {
+    const libres = choisies.filter((t) => occupants[t].length < tentes[t]);
+    if (libres.length === 0) { sansPlace.push(p); continue; }
+    libres.sort((a, b) => occupants[a].length - occupants[b].length);
+    occupants[libres[0]].push(p);
+  }
+  return { occupants, sansPlace };
+}
+
+function texteTentes(presents) {
+  if (!Object.values(donnees.tentes || {}).some((n) => n > 0)) return "";
+  const { occupants, sansPlace } = repartirTentes(presents);
+  const lignes = Object.entries(occupants).map(([t, gens]) => `- Tente de ${t} : ${gens.join(", ")}`);
+  if (sansPlace.length > 0) lignes.push(`- Sans place : ${sansPlace.join(", ")} (il manque des tentes !)`);
+  return lignes.join("\n");
+}
+
+// ---------- Les courses ----------
+// Pour chaque aliment, une quantité PAR PERSONNE ; l'outil multiplie par le nombre de présents.
+function quantite(qte, unite, n) {
+  const total = qte * n;
+  const nombre = (x) => x.toLocaleString("fr-FR", { maximumFractionDigits: 2 });
+  if (unite === "g" && total >= 1000) return `${nombre(total / 1000)} kg`;
+  if (unite === "cl" && total >= 100) return `${nombre(total / 100)} L`;
+  return `${nombre(total)} ${unite}`;
+}
+
+function texteCourses(we, n) {
+  return (we.courses || []).map((c) => `- ${c.nom} : ${quantite(c.qte, c.unite, n)}`).join("\n");
+}
+
 // ---------- Affichage ----------
 
 function afficher() {
@@ -176,6 +228,23 @@ function afficher() {
     choixWe.appendChild(option);
   }
   el("prix").value = we.prix;
+  el("pour-commencer").hidden = donnees.clan.length > 0;
+
+  // Calcul du prix : total des tickets divisé par le nombre de présents (l'intendant mange aussi).
+  const nbPresents = donnees.clan.filter((p) => we.presents[p]).length;
+  el("total-courses").value = we.totalCourses || "";
+  if (we.totalCourses > 0 && nbPresents > 0) {
+    const exact = we.totalCourses / nbPresents;
+    const arrondi = Math.ceil(exact * 2) / 2; // arrondi aux 50 centimes au-dessus
+    el("calcul-prix").textContent = `${euros(we.totalCourses)} pour ${nbPresents} présent(s) = ${euros(exact)} par personne, arrondi à ${euros(arrondi)}.`;
+    el("appliquer-prix").hidden = arrondi === we.prix;
+    el("appliquer-prix").onclick = () => modifier(() => (we.prix = arrondi));
+  } else {
+    el("calcul-prix").textContent = nbPresents > 0
+      ? `Avec le prix actuel, le budget est de ${euros(we.prix * nbPresents)} (${euros(we.prix)} × ${nbPresents}).`
+      : "Coche d'abord qui vient.";
+    el("appliquer-prix").hidden = true;
+  }
   // Seuls les week-ends ajoutés à la main peuvent être retirés.
   el("retirer-weekend").hidden = !(donnees.ajoutes || []).some((w) => w.id === donnees.weekendChoisi);
 
@@ -249,7 +318,7 @@ function afficher() {
   const id = donnees.weekendChoisi;
   const listeAffaires = el("liste-affaires");
   listeAffaires.innerHTML = "";
-  for (const objet of AFFAIRES) {
+  for (const objet of objets()) {
     const li = document.createElement("li");
     const gauche = document.createElement("div");
     const nom = document.createElement("span");
@@ -269,10 +338,74 @@ function afficher() {
     listeAffaires.appendChild(li);
   }
 
+  // 3. (suite) Modifier la liste des affaires
+  const listeObjets = el("liste-objets");
+  listeObjets.innerHTML = "";
+  for (const objet of objets()) {
+    const li = document.createElement("li");
+    const nom = document.createElement("span");
+    nom.textContent = objet;
+    const retirer = document.createElement("button");
+    retirer.type = "button";
+    retirer.className = "retirer";
+    retirer.textContent = "×";
+    retirer.onclick = () => {
+      if (confirm(`Retirer « ${objet} » de la liste des affaires ?`)) {
+        modifier(() => (donnees.objets = objets().filter((o) => o !== objet)));
+      }
+    };
+    li.append(nom, retirer);
+    listeObjets.appendChild(li);
+  }
+
+  // 3 ter. Les tentes : la taille de la tente de chaque présent, puis la répartition
+  const listeTentes = el("liste-tentes");
+  listeTentes.innerHTML = "";
+  for (const p of presents) {
+    const li = document.createElement("li");
+    const nom = document.createElement("span");
+    nom.textContent = p;
+    const choix = document.createElement("select");
+    for (const n of [0, 1, 2, 3, 4]) {
+      const option = document.createElement("option");
+      option.value = n;
+      option.textContent = n === 0 ? "pas de tente" : `tente ${n} place${n > 1 ? "s" : ""}`;
+      option.selected = n === ((donnees.tentes || {})[p] || 0);
+      choix.appendChild(option);
+    }
+    choix.onchange = () => modifier(() => {
+      donnees.tentes = { ...(donnees.tentes || {}), [p]: Number(choix.value) };
+    });
+    li.append(nom, choix);
+    listeTentes.appendChild(li);
+  }
+  el("repartition-tentes").textContent = presents.length === 0
+    ? "Coche d'abord qui vient."
+    : texteTentes(presents) || "Indique la tente de chacun pour voir la répartition.";
+
+  // 3 quater. Les courses
+  const listeCourses = el("liste-courses");
+  listeCourses.innerHTML = "";
+  for (const [i, c] of (we.courses || []).entries()) {
+    const li = document.createElement("li");
+    const nom = document.createElement("span");
+    nom.textContent = `${c.nom} : ${c.qte} ${c.unite}/pers. → ${quantite(c.qte, c.unite, presents.length)}`;
+    const retirer = document.createElement("button");
+    retirer.type = "button";
+    retirer.className = "retirer";
+    retirer.textContent = "×";
+    retirer.onclick = () => modifier(() => we.courses.splice(i, 1));
+    li.append(nom, retirer);
+    listeCourses.appendChild(li);
+  }
+  el("message-courses").value = (we.courses || []).length
+    ? `Courses pour ${presents.length} personne(s) :\n${texteCourses(we, presents.length)}`
+    : "";
+
   // 3 bis. Fin du week-end : qui repart avec quoi
   const listeRepart = el("liste-repart");
   listeRepart.innerHTML = "";
-  for (const objet of AFFAIRES) {
+  for (const objet of objets()) {
     const li = document.createElement("li");
     const nom = document.createElement("span");
     nom.textContent = objet;
@@ -304,13 +437,15 @@ function fabriquerMessage(we, pasPaye) {
   const w = calendrier().find((x) => x.id === donnees.weekendChoisi);
   const lignes = [`Salut les gars ! Pour le ${w.nom} (${w.dates}) :`, "", "Qui apporte quoi :"];
   const id = donnees.weekendChoisi;
-  for (const objet of AFFAIRES) {
+  for (const objet of objets()) {
     const p = porteur(id, objet);
     const g = gardien(id, objet);
     let qui = p || "à trouver !";
     if (!p && g && !we.presents[g]) qui = `à trouver ! (c'est ${g} qui l'a : à faire passer)`;
     lignes.push(`- ${objet} : ${qui}`);
   }
+  const tentes = texteTentes(donnees.clan.filter((p) => we.presents[p]));
+  if (tentes) lignes.push("", "Tentes :", tentes);
   lignes.push("");
   const aQui = we.intendant ? ` à rembourser à ${we.intendant}` : "";
   lignes.push(`Intendance : ${euros(we.prix)}${aQui}.`);
@@ -322,7 +457,7 @@ function fabriquerMessage(we, pasPaye) {
 function fabriquerMessageFin() {
   const w = calendrier().find((x) => x.id === donnees.weekendChoisi);
   const lignes = [`Merci pour le ${w.nom} ! Qui garde quoi jusqu'au prochain week-end :`, ""];
-  for (const objet of AFFAIRES) {
+  for (const objet of objets()) {
     lignes.push(`- ${objet} : ${repartAvec(w.id, objet) || "personne ?!"}`);
   }
   return lignes.join("\n");
@@ -390,6 +525,49 @@ el("retirer-weekend").onclick = () => {
     donnees.weekendChoisi = WEEKENDS[0].id;
   });
 };
+
+el("total-courses").onchange = (e) =>
+  modifier(() => (weekendActuel().totalCourses = Number(e.target.value) || 0));
+
+el("ajout-objet").onsubmit = (e) => {
+  e.preventDefault();
+  const nom = el("nouvel-objet").value.trim();
+  if (nom && !objets().some((o) => o.toLowerCase() === nom.toLowerCase())) {
+    modifier(() => (donnees.objets = [...objets(), nom]));
+  }
+  el("nouvel-objet").value = "";
+};
+
+el("ajout-course").onsubmit = (e) => {
+  e.preventDefault();
+  const nom = el("course-nom").value.trim();
+  const qte = Number(el("course-qte").value);
+  if (!nom || !(qte > 0)) {
+    alert("Il faut un aliment et une quantité par personne.");
+    return;
+  }
+  modifier(() => {
+    const we = weekendActuel();
+    we.courses = [...(we.courses || []), { nom, qte, unite: el("course-unite").value }];
+  });
+  el("course-nom").value = "";
+  el("course-qte").value = "";
+};
+
+// Reprendre la liste de courses du dernier week-end qui en avait une.
+el("reprendre-courses").onclick = () => {
+  const ordre = calendrier().map((w) => w.id);
+  const avant = ordre.slice(0, ordre.indexOf(donnees.weekendChoisi)).reverse()
+    .find((id) => (donnees.weekends[id]?.courses || []).length > 0);
+  if (!avant) {
+    alert("Aucun week-end précédent n'a de liste de courses.");
+    return;
+  }
+  modifier(() => (weekendActuel().courses = donnees.weekends[avant].courses.map((c) => ({ ...c }))));
+};
+
+el("copier-courses").onclick = () =>
+  copier(el("copier-courses"), el("message-courses"), "Copier la liste de courses", "Copiée !");
 
 el("proposer-intendant").onclick = () => {
   const we = weekendActuel();

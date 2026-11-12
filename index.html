@@ -15,6 +15,16 @@
       <h1>Intendance du clan</h1>
     </header>
 
+    <!-- 0. N'apparaît qu'à la première utilisation (tant que le clan est vide). -->
+    <section id="pour-commencer" class="pour-commencer" hidden>
+      <h2>Pour commencer</h2>
+      <ol>
+        <li>Colle les prénoms du clan dans « Qui vient » (séparés par des virgules).</li>
+        <li>Choisis le week-end, coche qui vient et choisis l'intendant.</li>
+        <li>Dis qui apporte quoi, puis copie le message pour le groupe.</li>
+      </ol>
+    </section>
+
     <!-- 1. Le week-end -->
     <section>
       <h2>Week-end</h2>
@@ -30,6 +40,13 @@
         </form>
       </details>
       <label>Prix de l'intendance (€) <input id="prix" type="number" min="0" step="0.5"></label>
+      <!-- Calcul du prix à partir des tickets de courses. -->
+      <details>
+        <summary>Calculer le prix à partir des courses</summary>
+        <label>Total des tickets (€) <input id="total-courses" type="number" min="0" step="0.01"></label>
+        <p class="aide" id="calcul-prix"></p>
+        <button type="button" id="appliquer-prix" class="petit secondaire" hidden>Utiliser ce prix</button>
+      </details>
       <div class="ligne-intendant">
         <label>Intendant <select id="intendant"></select></label>
         <!-- Propose celui des présents qui a été intendant le moins souvent. -->
@@ -53,13 +70,53 @@
     <section>
       <h2>Affaires à apporter</h2>
       <ul class="liste" id="liste-affaires"></ul>
+      <details>
+        <summary>Modifier la liste des affaires</summary>
+        <ul class="liste" id="liste-objets"></ul>
+        <form id="ajout-objet" class="ajout">
+          <input id="nouvel-objet" type="text" placeholder="ex. Brûleur" autocomplete="off">
+          <button type="submit" class="petit">Ajouter</button>
+        </form>
+      </details>
+    </section>
+
+    <!-- 3 bis. Les tentes -->
+    <section>
+      <details>
+        <summary class="titre">Tentes</summary>
+        <p class="aide">Indique une fois la tente de chacun. L'outil prend juste assez de tentes pour les présents, les plus grandes d'abord, et répartit les autres.</p>
+        <ul class="liste" id="liste-tentes"></ul>
+        <p class="repartition" id="repartition-tentes"></p>
+      </details>
+    </section>
+
+    <!-- 3 ter. Les courses -->
+    <section>
+      <details>
+        <summary class="titre">Liste de courses</summary>
+        <p class="aide">Mets la quantité pour UNE personne : l'outil multiplie par le nombre de présents.</p>
+        <ul class="liste" id="liste-courses"></ul>
+        <form id="ajout-course" class="ajout-course">
+          <input id="course-nom" type="text" placeholder="ex. Pâtes" autocomplete="off">
+          <input id="course-qte" type="number" min="0" step="any" placeholder="120">
+          <select id="course-unite">
+            <option value="g">g</option>
+            <option value="cl">cl</option>
+            <option value="pièce(s)">pièce(s)</option>
+          </select>
+          <button type="submit" class="petit">Ajouter</button>
+        </form>
+        <button type="button" id="reprendre-courses" class="secondaire">Reprendre la liste du week-end précédent</button>
+        <textarea id="message-courses" rows="8"></textarea>
+        <button type="button" id="copier-courses">Copier la liste de courses</button>
+      </details>
     </section>
 
     <!-- 4. Le message à coller dans le groupe WhatsApp -->
     <section>
       <h2>Message pour le groupe</h2>
       <p class="aide">Tu peux retoucher le texte avant de le copier.</p>
-      <textarea id="message" rows="24"></textarea>
+      <textarea id="message" rows="30"></textarea>
       <!-- N'apparaît que si le message a été retouché à la main. -->
       <div id="retouche" class="retouche" hidden>
         <span id="retouche-texte"></span>
@@ -70,11 +127,13 @@
 
     <!-- 5. Fin du week-end : qui repart avec quoi (pour savoir qui l'a au prochain) -->
     <section>
-      <h2>Fin du week-end : qui repart avec quoi</h2>
+      <details>
+      <summary class="titre">Fin du week-end : qui repart avec quoi</summary>
       <p class="aide">Par défaut, chacun remporte ce qu'il a apporté. Change seulement ce qui part chez quelqu'un d'autre. Au prochain week-end, l'outil saura qui a quoi.</p>
       <ul class="liste" id="liste-repart"></ul>
       <textarea id="message-fin" rows="15"></textarea>
       <button type="button" id="copier-fin">Copier le message de fin</button>
+      </details>
     </section>
 
     <!-- 6. La sauvegarde : les données ne sont que sur ce téléphone -->
