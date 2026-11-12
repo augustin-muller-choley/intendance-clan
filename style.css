@@ -11,13 +11,6 @@ body {
 
 h1 {
   font-size: 1.5rem;
-  margin-bottom: 4px;
-}
-
-.maquette {
-  margin-top: 0;
-  color: #a33;
-  font-size: 0.9rem;
 }
 
 /* Chaque partie de la page est une « carte » blanche. */
@@ -39,11 +32,16 @@ label {
 }
 
 input[type="text"],
-input[type="date"],
 input[type="number"],
-select {
+select,
+textarea {
   font-size: 1rem;       /* 16 px minimum : sinon l'iPhone zoome tout seul */
   padding: 6px;
+}
+
+input[type="checkbox"] {
+  width: 22px;           /* cases assez grosses pour un pouce */
+  height: 22px;
 }
 
 /* Les listes : le nom à gauche, le choix à droite. */
@@ -61,21 +59,19 @@ select {
   border-bottom: 1px solid #eee;
 }
 
-.liste li label {
-  margin: 0;
-}
-
-/* Liste du clan : 3 colonnes (prénom, vient, a payé). */
-.liste li:has(> input) ,
-.liste li.entete {
+/* Liste du clan : 4 colonnes (prénom, vient, a payé, retirer). */
+#liste-clan li {
   display: grid;
-  grid-template-columns: 1fr 64px 64px;
+  grid-template-columns: 1fr 56px 56px 32px;
   justify-items: center;
 }
 
-.liste li:has(> input) > span:first-child,
-.liste li.entete > span:first-child {
+#liste-clan li > span:first-child {
   justify-self: start;
+}
+
+#liste-clan li.vide {
+  display: block;
 }
 
 .entete {
@@ -92,12 +88,33 @@ select {
   font-weight: bold;
 }
 
-.message {
-  white-space: pre-wrap; /* garde les retours à la ligne du message */
-  background: #e7f6e7;   /* vert clair, comme une bulle WhatsApp */
-  padding: 12px;
-  border-radius: 8px;
+.vide,
+.aide {
+  color: #777;
+  font-size: 0.9rem;
+}
+
+/* Le formulaire pour ajouter un prénom : le champ, puis le bouton. */
+.ajout {
+  display: flex;
+  gap: 8px;
+}
+
+.ajout input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Le message : une grande zone de texte modifiable, vert clair comme WhatsApp. */
+textarea {
+  width: 100%;
+  box-sizing: border-box;
   font-family: inherit;
+  background: #e7f6e7;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 8px;
 }
 
 button {
@@ -108,4 +125,55 @@ button {
   border-radius: 8px;
   background: #2a7a3b;
   color: white;
+}
+
+button.petit {
+  width: auto;
+  padding: 8px 14px;
+}
+
+/* La petite croix pour retirer quelqu'un du clan. */
+button.retirer {
+  width: auto;
+  padding: 0 6px;
+  background: transparent;
+  color: #999;
+  font-size: 1.3rem;
+}
+
+/* Avertissement quand le message a été retouché à la main. */
+.retouche {
+  background: #fff4d6;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.retouche[hidden] {
+  display: none;
+}
+
+/* Bouton moins important : contour vert, fond blanc. */
+button.secondaire {
+  background: white;
+  color: #2a7a3b;
+  border: 1px solid #2a7a3b;
+  margin-top: 8px;
+}
+
+/* Les zones de texte de la sauvegarde : petites, en gris. */
+#texte-sauvegarde,
+#texte-restauration {
+  background: #f0f0f0;
+  font-size: 0.85rem;
+}
+
+details {
+  margin-top: 12px;
+}
+
+summary {
+  color: #555;
+  margin-bottom: 8px;
 }
